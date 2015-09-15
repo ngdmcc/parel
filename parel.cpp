@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include <io.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+#include <iostream>
+#include <dir.h>
 struct ffblk
 {
 	char ff_reserved[21];//DOS文件保留字
