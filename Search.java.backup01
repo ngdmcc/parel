@@ -45,11 +45,10 @@ public class Search{
 	}
 	//testInputStream
 	//MD5验证程序，获取制定文件的MD5值以此验证文件的完整性
-	public static String testInputStream(String filePath){
+	public static void testInputStream(String filePath){
    /**
     * 使用BouncyCastleProvider，需加载对应的包。
     */
-	String returnStr=null;
    Security.addProvider(new BouncyCastleProvider());
    Provider provider = Security.getProvider("BC");
    try {
@@ -99,7 +98,6 @@ public class Search{
    String outputStr =new String(Hex.encode(output));
    System.out.println("filePath:"+filePath);
    System.out.println("MD5:"+outputStr);
-   returnStr = "MD5:"+outputStr;
   } catch (NoSuchAlgorithmException e) {
    // TODO Auto-generated catch block
    e.printStackTrace();
@@ -110,7 +108,6 @@ public class Search{
    // TODO Auto-generated catch block
    e.printStackTrace();
   }
-  return returnStr;
  }
  /*
  读取日志文件函数
@@ -118,7 +115,6 @@ public class Search{
  public static String readFileByLines(String fileName) {
         File file = new File(fileName);
         BufferedReader reader = null;
-		String reStr= null;
         try {
             //System.out.println("以行为单位读取文件内容，一次读一整行：");
             reader = new BufferedReader(new FileReader(file));
@@ -128,9 +124,12 @@ public class Search{
             while ((tempString = reader.readLine()) != null) {
                 // 显示行号
                 //System.out.println("line " + line + ": " + tempString);
-				System.out.println(tempString);
-                reStr = tempString;
-				line++;
+				//System.out.println(tempString);
+                line++;
+				if(line==2)
+				{
+					return tempString;
+				}
             }
             reader.close();
         } catch (IOException e) {
@@ -143,7 +142,6 @@ public class Search{
                 }
             }
         }
-		return reStr;
     }
 	/**
 	 * main
@@ -161,8 +159,6 @@ public class Search{
 		//检查文件完整性的路径
 		//保存MD5值的字符串
 		String logInfo = null;
-		//保存接收端文件的MD5值
-		String MD5Info = null;
 		// 打印文件夹信息
 		printAllInfo(dir);
 		System.out.println("\nsearch key : " + key);
@@ -176,20 +172,11 @@ public class Search{
 					/*while(!testInputStream(filepath)){
 							sleep(10);
 					}*/
-					MD5Info=testInputStream(key);
+					testInputStream(key);
 					System.out.println("从日志文件中提取源文件的MD5值，并以此作为与现有的MD5值作参照");
 					logInfo=readFileByLines("log.20");
-					/*System.out.println("测试返回值");
-					System.out.println(MD5Info);
-					System.out.println(logInfo);*/
-					if(MD5Info.equals(logInfo))
-					{
-						System.out.println("该批次文件已经到达且完整，现在调用解包脚本进行解包");
-					}
-					else
-					{
-						System.out.println("MD5值不相等，传输错误");
-					}
+					System.out.println("该批次文件已经到达且完整，现在调用解包脚本进行解包");
+					
 					callShell("sh untar.sh");
 					System.out.println("解包程序执行完毕");
 				} else if (file.isDirectory()) {

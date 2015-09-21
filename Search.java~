@@ -1,0 +1,150 @@
+import java.io.File;
+public class Search{
+	// file info
+	private static StringBuffer fileInfo;
+	// dir info
+	private static StringBuffer dirInfo;
+	// child file info
+	private static File[] fm;
+	/**
+	 * main
+	 * 
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// 查找目录
+		File dir = new File(".");
+		// 要查找的关键字
+		String key = "tarfile";
+		//最后一批打包的文件包
+		String last = "lastpack";
+		// 打印文件夹信息
+		printAllInfo(dir);
+		System.out.println("\nsearch key : " + key);
+		System.out.println("search results : ");
+		for (File file : fm) {
+			if (file.getName().indexOf(key) >= 0) {
+				if (file.isFile()) {
+					System.out.println("file : " + file.getName() + "   ");
+					System.out.println("正在对该批次文件进行数据完整性验证");
+					while(!testInputStream(filepath)){
+							sleep(10);
+					}
+					System.out.println("该批次文件已经到达且完整，现在调用解包脚本进行解包");
+					
+					if(callShell("sh untar.sh")==0)
+					{
+						System.out.println("解包成功！");
+					}
+				} else if (file.isDirectory()) {
+					System.out.println("dir : " + file.getName() + "   ");
+				}
+			}
+			if (file.getName().indexOf(last) >= 0){
+			if (file.isFile()){
+				System.out.println("file:"+file.getName()+" ");
+				System.out.println("最后一批文件到达，调用解包脚本，并且退出整个程序，输出程序结束的提示！");
+			}else if(file.isDirectory()){
+				System.out.println("dir:"+file.getName()+"   ");
+			}
+			}
+		}
+	}
+	/**
+	 * print info of this directory
+	 * 
+	 * @param dir
+	 */
+	public static void printAllInfo(File dir) {
+		fileInfo = new StringBuffer();
+		dirInfo = new StringBuffer();
+		fm = dir.listFiles();
+		for (File file : fm) {
+			if (file.isFile()) {
+				fileInfo.append(file.getName() + "    ");
+			} else if (file.isDirectory()) {
+				dirInfo.append(file.getName() + "    ");
+			}
+		}
+		System.out.println(dir.getAbsolutePath());
+		System.out.println("contains : ");
+		System.out.println("file ---> " + fileInfo);
+		System.out.println("dir  ---> " + dirInfo);
+	}
+	//调用shell脚本的函数，成功返回0，失败则会出现报错信息
+		public static void callShell(String shellString) {
+		try {
+			Process process = Runtime.getRuntime().exec(shellString);
+			int exitValue = process.waitFor();
+			if (0 != exitValue) {
+				log.error("call shell failed. error code is :" + exitValue);
+			}
+		} catch (Throwable e) {
+			log.error("call shell failed. " + e);
+		}
+	}
+		public static void testInputStream(String filePath){
+   /**
+    * 使用BouncyCastleProvider，需加载对应的包。
+    */
+   Security.addProvider(new BouncyCastleProvider());
+   Provider provider = Security.getProvider("BC");
+   try {
+    /**
+     * 使用MD5进行完整性校验
+     */
+   MessageDigest digest = MessageDigest.getInstance("MD5",provider);
+   /**
+    * 获取文件流
+    */
+   FileInputStream in=new FileInputStream(filePath);
+   DigestInputStream din =new DigestInputStream(in,digest);
+   int bfSize=40000000;
+   int length=in.available();
+   int currentSize=0;
+   boolean goon=true;
+   /**
+    * 根据文件流更新摘要数据源
+    */
+   while(goon){
+    byte[] buffer =new byte[bfSize];
+    int readSize=bfSize;
+    if((length-currentSize)<bfSize){
+     goon=false;
+     readSize=length-currentSize;
+     
+    }else{
+     goon=true;
+     readSize=bfSize;
+     
+    }
+    din.read(buffer, 0, readSize);
+    if(goon==false){
+     currentSize +=readSize;
+    }else{
+     currentSize+=bfSize;
+    }
+    
+   }
+   /**
+    * 生成摘要信息
+    */
+   byte[] output = digest.digest();
+   /**
+    * 生成十六进制字符串
+    */
+   String outputStr =new String(Hex.encode(output));
+   System.out.println("filePath:"+filePath);
+   System.out.println("MD5:"+outputStr);
+  } catch (NoSuchAlgorithmException e) {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  } catch (FileNotFoundException e) {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  } catch (IOException e) {
+   // TODO Auto-generated catch block
+   e.printStackTrace();
+  }
+ }
+}
