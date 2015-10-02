@@ -124,8 +124,7 @@ public class LogTest{
 	{
 		String[] array=new String[20];//1、先判断log文件是不是最新的，如果是则进行日志文件提取工作，
 		String MD5 = null;
-		//String  logfile = "log."+"20";    //包括文件名和MD5值，并将其存放在字符串中。
-		String logfile=args[0];
+		String  logfile = "log."+"20";    //包括文件名和MD5值，并将其存放在字符串中。
 		readFileByLines(logfile,array);//2、按照1中取得文件名，对当前文件夹中的文件进行MD5值的提取
 		//System.out.println(array[0]);//3、将2中与1中取得的值进行比较，相等则调用解包脚本进行解包，否则报错退出
 		for(int i=0; i < (array.length-1);i++)
